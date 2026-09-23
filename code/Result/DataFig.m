@@ -1,8 +1,10 @@
 % ============================================================
 % INS_Mechanization - Analysis Scripts
 % Author: Mohammed Hsiny
-% Based on the original project by GYH-WHU
-% Year: 2025
+% Field: Electrical Engineering & Industrial Control Student
+% Institution: Faculty of Sciences and Techniques of Mohammedia
+% Year: 2026
+% Repository: inertial-navigation-mechanization_hsiny_med
 % ============================================================
 
 function DataFig(data_our, data_true)

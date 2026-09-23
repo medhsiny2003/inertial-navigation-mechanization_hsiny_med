@@ -1,9 +1,9 @@
 // ============================================================
 // INS_Mechanization - Inertial Navigation System Mechanization
 // Author: Mohammed Hsiny
-// Title: Élève ingénieur en génie électrique et contrôle industriel
-// Based on the original project by GYH-WHU
-// Year: 2025
+// Field: Electrical Engineering & Industrial Control Student
+// Institution: Faculty of Sciences and Techniques of Mohammedia
+// Year: 2026
 // Repository: inertial-navigation-mechanization_hsiny_med
 // ============================================================
 
