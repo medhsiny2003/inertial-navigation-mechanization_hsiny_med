@@ -1,0 +1,28 @@
+# Build artifacts
+*.exe
+*.o
+*.obj
+*.out
+*.dll
+*.so
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Octave/MATLAB
+*.asv
+*.mex*
+*.fig
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp

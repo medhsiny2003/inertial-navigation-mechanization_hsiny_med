@@ -1,17 +1,7 @@
 """
 Synthetic IMU Data Generator for INS_Mechanization
-====================================================
 Author: Mohammed Hsiny
-Field: Electrical Engineering & Industrial Control Student
-Institution: Faculty of Sciences and Techniques of Mohammedia
 Year: 2026
-Repository: inertial-navigation-mechanization_hsiny_med
-
-This script generates two files:
-  - GroupOne.ASC : raw IMU measurements (gyro + accel)
-  - TruthOne.nav : ground truth trajectory
-
-Usage: python generate_imu_data.py
 """
 
 import numpy as np
