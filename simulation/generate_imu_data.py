@@ -94,6 +94,7 @@ def compute_imu_measurements(t, lat, lon, h, vn, ve, vd, roll, pitch, yaw):
            np.random.randn(N, 3) * GYRO_NOISE_STD
     accel = acc_body + ACC_BIAS + \
             np.random.randn(N, 3) * ACC_NOISE_STD
+    accel[:, 2] *= -1  # Flip Z to match NED convention used by the C++ code
     return gyro, accel
 
 
