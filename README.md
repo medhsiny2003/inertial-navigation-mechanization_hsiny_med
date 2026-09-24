@@ -26,28 +26,46 @@ GPS-denied environments.
 
 ## Motivation
 
-The starting point of this project came from observing the massive use of
-autonomous drones in recent conflicts — Ukraine, Russia, Iran — where
-electronic warfare and GPS jamming have made satellite-based navigation
-unreliable. The operational lesson is clear: **the future of autonomous
-aerial systems depends on inertial navigation and onboard sensor fusion**,
-not on external signals that can be denied.
+My original goal was to build an **autonomous kamikaze drone** that could
+navigate, patrol, and strike a target using **inertial navigation only** —
+no GPS, no external signals. The reasoning was simple: with the massive
+use of drones in modern conflicts (Ukraine, Russia, Iran), GPS jamming
+and electronic warfare have become the norm, and any system that depends
+on satellite signals is vulnerable.
 
-This raised a question I wanted to answer rigorously:
+The historical reference for this idea was the **V2 ballistic missile**
+(Germany, 1942–1945), the world's first operational ballistic missile.
+Its guidance system was purely inertial: a stabilized gyroscopic platform
+combined with a pendulous integrating gyroscopic accelerometer (PIGA) and
+an analog computer (the *Mischgerät*) that cut off the engine once the
+required velocity was reached. It was brilliant for its time — but
+**inaccurate by design**, with a CEP of several kilometers.
 
-> *Can a drone navigate autonomously using only an IMU, without any
-> external aiding source?*
+The question I wanted to answer was:
 
-Historically, the first system to attempt this was the **V2 ballistic
-missile** (Germany, 1942–1945), the world's first operational ballistic
-missile. Its guidance system was purely inertial: a stabilized gyroscopic
-platform combined with a pendulous integrating gyroscopic accelerometer
-(PIGA) and an analog computer (the *Mischgerät*) that cut off the engine
-once the required velocity was reached. It was brilliant for its time —
-but **inaccurate by design**, with a CEP of several kilometers.
+> *Can a modern drone navigate autonomously using only an IMU, without
+> any external aiding source?*
 
-I wanted to understand *why* — mathematically, physically, and
-computationally.
+To answer it rigorously, I implemented a full inertial navigation
+mechanization, built a synthetic IMU data generator, and ran simulations
+on realistic flight trajectories. The result was unambiguous:
+
+**Pure inertial navigation is not viable over long durations.**
+
+Even with careful bias calibration and Zero Velocity Updates, the position
+error grows quadratically with time. This is not a limitation of the
+implementation — it is a **fundamental mathematical consequence** of
+integrating sensor errors twice.
+
+This finding is the **central result of the project**: it explains why
+modern autonomous systems (including the drone systems used in Ukraine
+and Iran) rely on **sensor fusion** — IMU for short-term dynamics, aided
+by optical flow, visual-inertial odometry, or GNSS when available — rather
+than on inertial navigation alone.
+
+The project is therefore both a **proof of concept** and a **negative
+result**: it demonstrates what does not work, and why, laying the
+foundation for the sensor-fusion architecture that is the next step.
 
 ---
 
@@ -167,9 +185,10 @@ Key relations implemented:
 │   ├── plot_results.py
 │   ├── requirements.txt
 │   └── README.md
-├── report/                # Technical report & diagrams
-│   ├── lab_report.pdf
-│   └── diagrams.pptx
+├── report/                # Technical report & presentation
+│   ├── lab_report.docx    # Complete English technical report (Word)
+│   ├── lab_report.pdf     # Publication-grade technical report (PDF)
+│   └── diagrams.pptx      # Project presentation & flow diagrams
 ├── .gitignore
 ├── LICENSE
 └── README.md
