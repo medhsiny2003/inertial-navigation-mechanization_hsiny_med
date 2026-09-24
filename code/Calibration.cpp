@@ -45,7 +45,9 @@ void AccCalibration(double accmean[3], IMUDataEpoch* rawdata)
 	double biasAcc[3] = { 0.0, 0.0, 0.0 };
 	biasAcc[0] = accmean[0];
 	biasAcc[1] = accmean[1];
-	biasAcc[2] = accmean[2] + gravity / rate_CGI;
+	// With SI units, accmean[2] ≈ -gravity when stationary.
+	// The bias is therefore accmean[2] + gravity ≈ 0.
+	biasAcc[2] = accmean[2] + gravity;
 
 	rawdata->Acc.X -= biasAcc[0];
 	rawdata->Acc.Y -= biasAcc[1];

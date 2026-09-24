@@ -15,9 +15,16 @@
 // Output: Updated quaternion result_k, updated INS state result_cur
 bool PostureUpdate(IMUDataEpoch pos_cur, IMUDataEpoch pos_prv, INSDataEpoch result_prv, Quater result_k_1, Quater* result_k, INSDataEpoch* result_cur)
 {
+	// Time step FIRST
+	double deltaT = pos_cur.TimeStamp - pos_prv.TimeStamp;
+
 	// 1. Equivalent rotation vector update in body frame (b-frame)
-	Vector3d q_cur(pos_cur.Gyr.X, pos_cur.Gyr.Y, pos_cur.Gyr.Z);	// Angular increment (rad)
+	Vector3d q_cur(pos_cur.Gyr.X, pos_cur.Gyr.Y, pos_cur.Gyr.Z);
 	Vector3d q_prv(pos_prv.Gyr.X, pos_prv.Gyr.Y, pos_prv.Gyr.Z);
+
+	// Convert angular VELOCITY (rad/s) to angular INCREMENT (rad)
+	q_cur *= deltaT;
+	q_prv *= deltaT;
 
 	Vector3d ERV_b = q_cur + q_prv.cross(q_cur) / 12.0;	// b-frame equivalent rotation vector (rad)
 	POSTURE EqualRotaionVec_b;
@@ -29,7 +36,6 @@ bool PostureUpdate(IMUDataEpoch pos_cur, IMUDataEpoch pos_prv, INSDataEpoch resu
 	qbkk_1.Setkk_1(EqualRotaionVec_b);
 
 	// 2. Equivalent rotation vector update in navigation frame (n-frame)
-	double deltaT = pos_cur.TimeStamp - pos_prv.TimeStamp;	// Time step
 	Vector3d w_ie_n(we * cos(result_prv.blh.latitude), 0, -we * sin(result_prv.blh.latitude));	// Earth rate in n-frame
 	
 	double R_M = a * (1 - pow(e, 2)) / sqrt(pow(1 - pow(e * sin(result_prv.blh.latitude), 2), 3));
@@ -66,17 +72,24 @@ bool PostureUpdate(IMUDataEpoch pos_cur, IMUDataEpoch pos_prv, INSDataEpoch resu
 // Output: Updated velocity in result_cur
 bool VelocityUpdate(IMUDataEpoch pos_cur, IMUDataEpoch pos_prv, IMUDataEpoch pos_pprv, INSDataEpoch result_prv, INSDataEpoch result_pprv, INSDataEpoch* result_cur)
 {
+	// Time step FIRST
+	double deltaT = pos_cur.TimeStamp - pos_prv.TimeStamp;
+
 	// 1. Calculate velocity increment vfk_bk_1 in body frame (sculling correction)
-	Vector3d vk(pos_cur.Acc.X, pos_cur.Acc.Y, pos_cur.Acc.Z);	// Current velocity increment (m/s)
-	Vector3d vk_1(pos_prv.Acc.X, pos_prv.Acc.Y, pos_prv.Acc.Z);	// Previous velocity increment (m/s)
+	Vector3d vk(pos_cur.Acc.X, pos_cur.Acc.Y, pos_cur.Acc.Z);
+	Vector3d vk_1(pos_prv.Acc.X, pos_prv.Acc.Y, pos_prv.Acc.Z);
 
-	Vector3d thetak(pos_cur.Gyr.X, pos_cur.Gyr.Y, pos_cur.Gyr.Z);	// Current angle increment (rad)
-	Vector3d thetak_1(pos_prv.Gyr.X, pos_prv.Gyr.Y, pos_prv.Gyr.Z);	// Previous angle increment (rad)
+	Vector3d thetak(pos_cur.Gyr.X, pos_cur.Gyr.Y, pos_cur.Gyr.Z);
+	Vector3d thetak_1(pos_prv.Gyr.X, pos_prv.Gyr.Y, pos_prv.Gyr.Z);
 
-	Vector3d vfk_bk_1 = vk + 0.5 * thetak.cross(vk) + (thetak_1.cross(vk) + vk_1.cross(thetak)) / 12.0;
+	// Convert angular velocity to angular increment
+	Vector3d thetak_inc = thetak * deltaT;
+	Vector3d thetak_1_inc = thetak_1 * deltaT;
+
+	// Specific force increment (multiply by deltaT)
+	Vector3d vfk_bk_1 = (vk + 0.5 * thetak_inc.cross(vk) + (thetak_1_inc.cross(vk) + vk_1.cross(thetak_inc)) / 12.0) * deltaT;
 
 	// 2. Calculate zetak_1k rotation vector in navigation frame (extrapolated)
-	double deltaT = pos_cur.TimeStamp - pos_prv.TimeStamp;
 	Vector3d w_ie_n = Vector3d::Zero(), w_en_n = Vector3d::Zero(), v_k_12 = Vector3d::Zero();
 
 	Extrapolation(pos_cur.TimeStamp, pos_prv.TimeStamp, pos_pprv.TimeStamp, result_prv.vel, result_pprv.vel, result_prv.blh, result_pprv.blh, &w_ie_n, &w_en_n, &v_k_12);

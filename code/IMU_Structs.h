@@ -51,21 +51,21 @@ const double initial_roll = 0.0107951084511778 * Rad;   // Roll angle (rad)
 const double initial_pitch = -2.14251290749072 * Rad;   // Pitch angle (rad)
 const double initial_heading = -75.7498049314083 * Rad; // Heading angle (rad)
 
-/* Self-test Data */
+/* Self-test Data — initial conditions are read from TruthOne.nav */
 const double starttime = 440532.000;    // Reference start time
 const double endtime = 442609.990;      // Reference end time
 
-const double ours_initial_week = 2390;          // Initial GPS week
-const double ours_initial_second = 440190.020;  // Initial second of week
-const double ours_initial_latitude = 30.5279685193 * Rad;     // Initial latitude
-const double ours_initial_longitude = 114.3555367313 * Rad;   // Initial longitude
-const double ours_initial_height = 23.3659979239;             // Initial height
-const double ours_initial_Vn = 0.0;             // Initial North velocity
-const double ours_initial_Ve = 0.0;             // Initial East velocity
-const double ours_initial_Vd = 0.0;             // Initial Down velocity
-const double ours_initial_roll = -0.2236406320 * Rad;           // Initial roll
-const double ours_initial_pitch = -0.0932009081 * Rad;          // Initial pitch
-const double ours_initial_yaw = (189.9907547479 - 360.0) * Rad; // Initial yaw / heading
+// const double ours_initial_week = 2390;
+// const double ours_initial_second = 440190.020;
+const double ours_initial_latitude = 30.5279685193 * Rad;
+// const double ours_initial_longitude = 114.3555367313 * Rad;
+// const double ours_initial_height = 23.3659979239;
+// const double ours_initial_Vn = 0.0;
+// const double ours_initial_Ve = 0.0;
+// const double ours_initial_Vd = 0.0;
+// const double ours_initial_roll = -0.2236406320 * Rad;
+// const double ours_initial_pitch = -0.0932009081 * Rad;
+const double ours_initial_yaw = (189.9907547479 - 360.0) * Rad;
 
 const int zero_time_intervals_num = 14;         // Number of zero-velocity intervals
 

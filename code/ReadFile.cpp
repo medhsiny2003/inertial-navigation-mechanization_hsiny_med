@@ -89,12 +89,12 @@ bool ReadIMURawData_CGI(ifstream& file, IMUDataEpoch* Rawdata, DeviceType device
 		if (parts.size() >= 7)
 		{
 			Rawdata->TimeStamp = stod(parts[0]);
-			Rawdata->Gyr.X = stod(parts[1]) * (1.0 / rate_CGI); // Angular increment
-			Rawdata->Gyr.Y = stod(parts[2]) * (1.0 / rate_CGI);
-			Rawdata->Gyr.Z = stod(parts[3]) * (1.0 / rate_CGI);
-			Rawdata->Acc.X = stod(parts[4]) * (1.0 / rate_CGI); // Velocity increment
-			Rawdata->Acc.Y = stod(parts[5]) * (1.0 / rate_CGI);
-			Rawdata->Acc.Z = stod(parts[6]) * (1.0 / rate_CGI);
+			Rawdata->Gyr.X = stod(parts[1]);
+			Rawdata->Gyr.Y = stod(parts[2]);
+			Rawdata->Gyr.Z = stod(parts[3]);
+			Rawdata->Acc.X = stod(parts[4]);
+			Rawdata->Acc.Y = stod(parts[5]);
+			Rawdata->Acc.Z = stod(parts[6]);
 			return true;
 		}
 	}

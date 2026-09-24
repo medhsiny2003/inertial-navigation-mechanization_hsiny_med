@@ -1,5 +1,5 @@
 % ============================================================
-% INS_Mechanization - Analysis Scripts
+% INS_Mechanization - Analysis Script
 % Author: Mohammed Hsiny
 % Field: Electrical Engineering & Industrial Control Student
 % Institution: Faculty of Sciences and Techniques of Mohammedia

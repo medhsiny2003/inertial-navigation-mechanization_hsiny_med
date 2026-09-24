@@ -1,5 +1,5 @@
 % ============================================================
-% INS_Mechanization - Analysis Scripts
+% INS_Mechanization - Analysis Script
 % Author: Mohammed Hsiny
 % Field: Electrical Engineering & Industrial Control Student
 % Institution: Faculty of Sciences and Techniques of Mohammedia
@@ -8,51 +8,53 @@
 % ============================================================
 
 function RmseWithTime(data1, data2, window_size) 
-    % data1 contains velocity and attitude errors
-    % data2 contains ENU position trajectory information
-
     if nargin < 3
         window_size = 100;
     end
 
-    % Extract arrays from data1
-    second1 = table2array(data1(:,1));
-    Vn = table2array(data1(:,2));
-    Ve = table2array(data1(:,3));
-    Vd = table2array(data1(:,4));
+    d1 = data1;
+    d2 = data2;
 
-    roll = table2array(data1(:,8));
-    pitch = table2array(data1(:,9));
-    yaw = table2array(data1(:,10));
+    second1 = d1(:, 1);
+    Vn = d1(:, 2);
+    Ve = d1(:, 3);
+    Vd = d1(:, 4);
+    roll = d1(:, 8);
+    pitch = d1(:, 9);
+    yaw = d1(:, 10);
 
-    % Extract arrays from data2
-    second2 = table2array(data2(:,1));
-    dN_true = table2array(data2(:,2));
-    dE_true = table2array(data2(:,3));
-    dU_true = table2array(data2(:,4));
+    second2 = d2(:, 1);
+    dN_true = d2(:, 2);
+    dE_true = d2(:, 3);
+    dU_true = d2(:, 4);
+    dN_our = d2(:, 5);
+    dE_our = d2(:, 6);
+    dU_our = d2(:, 7);
 
-    dN_our = table2array(data2(:,5));
-    dE_our = table2array(data2(:,6));
-    dU_our = table2array(data2(:,7));
+    ddN = dN_our - dN_true;
+    ddE = dE_our - dE_true;
+    ddU = dU_our - dU_true;
 
-    % Compute moving-window RMSE
+    % Moving-window RMSE
     RMSE_vn = calculate_rmse_window(second1, Vn, window_size);
     RMSE_ve = calculate_rmse_window(second1, Ve, window_size);
     RMSE_vd = calculate_rmse_window(second1, Vd, window_size);
 
-    RMSE_n = calculate_rmse_window(second2, dN_our - dN_true, window_size);
-    RMSE_e = calculate_rmse_window(second2, dE_our - dE_true, window_size);
-    RMSE_u = calculate_rmse_window(second2, dU_our - dU_true, window_size);
+    RMSE_n = calculate_rmse_window(second2, ddN, window_size);
+    RMSE_e = calculate_rmse_window(second2, ddE, window_size);
+    RMSE_u = calculate_rmse_window(second2, ddU, window_size);
+    RMSE_horiz = sqrt(RMSE_n.^2 + RMSE_e.^2);
+    RMSE_3d = sqrt(RMSE_n.^2 + RMSE_e.^2 + RMSE_u.^2);
 
     RMSE_roll = calculate_rmse_window(second1, roll, window_size);
     RMSE_pitch = calculate_rmse_window(second1, pitch, window_size);
     RMSE_yaw = calculate_rmse_window(second1, yaw, window_size);
     
-    % Terminal errors summary (Navigation performance metrics)
-    mile = 1852.0; % 1 nautical mile = 1852 meters
-    dN_last = dN_our(end) - dN_true(end);
-    dE_last = dE_our(end) - dE_true(end);
-    dU_last = dU_our(end) - dU_true(end);
+    % Terminal errors summary
+    mile = 1852.0;
+    dN_last = ddN(end);
+    dE_last = ddE(end);
+    dU_last = ddU(end);
 
     dVn_last = Vn(end);
     dVe_last = Ve(end);
@@ -65,116 +67,77 @@ function RmseWithTime(data1, data2, window_size)
     total_time1 = max((second1(end) - second1(1)) / 3600.0, 1e-6);
     total_time2 = max((second2(end) - second2(1)) / 3600.0, 1e-6);
 
-    fprintf("Total duration: %0.4f hours (%0.2f seconds)\n\n", total_time1, second1(end) - second1(1));
-    
+    fprintf("=== Terminal Drift Rates ===\n");
+    fprintf("Total duration: %0.4f hours (%0.2f seconds)\n", total_time1, second1(end) - second1(1));
     position_3d_error = sqrt(dN_last^2 + dE_last^2 + dU_last^2);
     fprintf("Position Drift Rate (m/h): dN=%0.4f, dE=%0.4f, dU=%0.4f, 3D=%0.4f\n", ...
         abs(dN_last/total_time2), abs(dE_last/total_time2), abs(dU_last/total_time2), ...
         position_3d_error/total_time2);
-    fprintf("Position Drift Rate (nm/h): dN=%0.4f, dE=%0.4f, dU=%0.4f, 3D=%0.4f\n\n", ...
+    fprintf("Position Drift Rate (nmi/h): dN=%0.4f, dE=%0.4f, dU=%0.4f, 3D=%0.4f\n\n", ...
         abs(dN_last/total_time2)/mile, abs(dE_last/total_time2)/mile, abs(dU_last/total_time2)/mile, ...
         position_3d_error/total_time2/mile);
 
-    velocity_3d_error = sqrt(dVn_last^2 + dVe_last^2 + dVd_last^2);
-    fprintf("Velocity Drift (m/s / h): dVn=%0.4f, dVe=%0.4f, dVd=%0.4f, 3D=%0.4f\n", ...
-        abs(dVn_last/total_time1), abs(dVe_last/total_time1), abs(dVd_last/total_time1), ...
-        velocity_3d_error/total_time1);
+    if ~exist('Figures', 'dir')
+        mkdir('Figures');
+    end
 
-    posture_3d_error = sqrt(droll_last^2 + dpitch_last^2 + dyaw_last^2);
-    fprintf("Attitude Drift (deg/h): dRoll=%0.4f, dPitch=%0.4f, dYaw=%0.4f, 3D=%0.4f\n\n", ...
-        abs(droll_last/total_time1), abs(dpitch_last/total_time1), abs(dyaw_last/total_time1), ...
-        posture_3d_error/total_time1);
+    % ------------------------------------------------------------
+    % Figure 1: 3-Subplot Position RMSE Evolution
+    % ------------------------------------------------------------
+    num_pts = length(RMSE_n);
+    t_plot = second2(min((1:num_pts)' * window_size, length(second2)));
 
-    % Plot RMSE figures
-    figure('Name', 'RMSE Evolution Over Time', 'NumberTitle', 'off');
+    h_rmse = figure('Name', 'Root Mean Square Error Evolution', 'NumberTitle', 'off');
+    set(h_rmse, 'Color', 'w');
 
-    % Velocity RMSE
-    time_idx1 = 1:window_size:length(second1);
-    subplot(3,3,1);  
-    plot(second1(time_idx1), RMSE_vn, 'r-', 'LineWidth', 1.5);
-    ylabel('Vn RMSE (m/s)');
-    xlabel('Time (s)');
-    title('North Velocity RMSE');
-    grid on;
-    xlim([second1(1), second1(end)]);
+    subplot(3, 1, 1);
+    plot(t_plot, RMSE_horiz, 'b-', 'LineWidth', 1.5);
+    grid on; box on;
+    ylabel('Position Error (m)', 'FontSize', 11);
+    title('Horizontal Position RMSE', 'FontSize', 11, 'FontWeight', 'bold');
+    h_leg1 = legend('RMSE', 'Location', 'northeast');
+    set(h_leg1, 'FontSize', 10);
+    xlim([min(second2), max(second2)]);
+    set(gca, 'FontSize', 10);
 
-    subplot(3,3,2);  
-    plot(second1(time_idx1), RMSE_ve, 'r-', 'LineWidth', 1.5);
-    ylabel('Ve RMSE (m/s)');
-    xlabel('Time (s)');
-    title('East Velocity RMSE');
-    grid on;
-    xlim([second1(1), second1(end)]);
+    subplot(3, 1, 2);
+    plot(t_plot, RMSE_u, 'b-', 'LineWidth', 1.5);
+    grid on; box on;
+    ylabel('Position Error (m)', 'FontSize', 11);
+    title('Vertical Position RMSE', 'FontSize', 11, 'FontWeight', 'bold');
+    h_leg2 = legend('RMSE', 'Location', 'northeast');
+    set(h_leg2, 'FontSize', 10);
+    xlim([min(second2), max(second2)]);
+    set(gca, 'FontSize', 10);
 
-    subplot(3,3,3);  
-    plot(second1(time_idx1), RMSE_vd, 'r-', 'LineWidth', 1.5);
-    ylabel('Vd RMSE (m/s)');
-    xlabel('Time (s)');
-    title('Down Velocity RMSE');
-    grid on;
-    xlim([second1(1), second1(end)]);
-
-    % Position RMSE
-    time_idx2 = 1:window_size:length(second2);
-    subplot(3,3,4);  
-    plot(second2(time_idx2), RMSE_n, 'g-', 'LineWidth', 1.5);
-    ylabel('dN RMSE (m)');
-    xlabel('Time (s)');
-    title('North Error RMSE');
-    grid on;
-    xlim([second2(1), second2(end)]);
-
-    subplot(3,3,5);  
-    plot(second2(time_idx2), RMSE_e, 'g-', 'LineWidth', 1.5);
-    ylabel('dE RMSE (m)');
-    xlabel('Time (s)');
-    title('East Error RMSE');
-    grid on;
-    xlim([second2(1), second2(end)]);
-
-    subplot(3,3,6);  
-    plot(second2(time_idx2), RMSE_u, 'g-', 'LineWidth', 1.5);
-    ylabel('dU RMSE (m)');
-    xlabel('Time (s)');
-    title('Up Error RMSE');
-    grid on;
-    xlim([second2(1), second2(end)]);
-
-    % Attitude RMSE
-    subplot(3,3,7);  
-    plot(second1(time_idx1), RMSE_roll, 'b-', 'LineWidth', 1.5);
-    ylabel('Roll RMSE (deg)');
-    xlabel('Time (s)');
-    title('Roll RMSE');
-    grid on;
-    xlim([second1(1), second1(end)]);
-
-    subplot(3,3,8);  
-    plot(second1(time_idx1), RMSE_pitch, 'b-', 'LineWidth', 1.5);
-    ylabel('Pitch RMSE (deg)');
-    xlabel('Time (s)');
-    title('Pitch RMSE');
-    grid on;
-    xlim([second1(1), second1(end)]);
-
-    subplot(3,3,9);  
-    plot(second1(time_idx1), RMSE_yaw, 'b-', 'LineWidth', 1.5);
-    ylabel('Yaw RMSE (deg)');
-    xlabel('Time (s)');
-    title('Yaw RMSE');
-    grid on;
-    xlim([second1(1), second1(end)]);
+    subplot(3, 1, 3);
+    plot(t_plot, RMSE_3d, 'b-', 'LineWidth', 1.5);
+    grid on; box on;
+    xlabel('Time (s)', 'FontSize', 11);
+    ylabel('Position Error (m)', 'FontSize', 11);
+    title('3D Position RMSE', 'FontSize', 11, 'FontWeight', 'bold');
+    h_leg3 = legend('RMSE', 'Location', 'northeast');
+    set(h_leg3, 'FontSize', 10);
+    xlim([min(second2), max(second2)]);
+    set(gca, 'FontSize', 10);
+    text(0.98, 0.02, 'Mohammed Hsiny - FST Mohammedia - 2026', ...
+         'Units', 'normalized', ...
+         'HorizontalAlignment', 'right', ...
+         'FontSize', 9, ...
+         'Color', [0.4 0.4 0.4]);
+    print(h_rmse, '-dpng', '-r300', 'Figures/rmse_evolution.png');
 end
 
-function RMSE_values = calculate_rmse_window(time, errors, window_size)
-    N = length(errors);
-    num_windows = ceil(N / window_size);
-    RMSE_values = zeros(num_windows, 1);
+% Moving-window RMSE calculation
+function RMSE = calculate_rmse_window(time, errors, window_size)
+    num_samples = length(time);
+    num_windows = floor(num_samples / window_size);
+    RMSE = zeros(num_windows, 1);
     
     for i = 1:num_windows
         start_idx = (i - 1) * window_size + 1;
-        end_idx = min(i * window_size, N);
+        end_idx = min(start_idx + window_size - 1, num_samples);
         window_errors = errors(start_idx:end_idx);
-        RMSE_values(i) = sqrt(mean(window_errors.^2));
+        RMSE(i) = sqrt(mean(window_errors.^2));
     end
 end

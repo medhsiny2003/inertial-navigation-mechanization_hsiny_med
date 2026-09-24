@@ -1,5 +1,5 @@
 % ============================================================
-% INS_Mechanization - Analysis Scripts
+% INS_Mechanization - Analysis Script
 % Author: Mohammed Hsiny
 % Field: Electrical Engineering & Industrial Control Student
 % Institution: Faculty of Sciences and Techniques of Mohammedia
@@ -12,19 +12,18 @@ function DiffFig(data, mode)
         mode = 1;
     end
 
-    % Convert table columns to numeric arrays
-    second = table2array(data(:,1));
-    Vn = table2array(data(:,2));
-    Ve = table2array(data(:,3));
-    Vd = table2array(data(:,4));
+    d = data;
 
-    B = table2array(data(:,5));
-    L = table2array(data(:,6));
-    H = table2array(data(:,7));
-
-    roll = table2array(data(:,8));
-    pitch = table2array(data(:,9));
-    yaw = table2array(data(:,10));
+    second = d(:, 1);
+    Vn = d(:, 2);
+    Ve = d(:, 3);
+    Vd = d(:, 4);
+    B = d(:, 5);
+    L = d(:, 6);
+    H = d(:, 7);
+    roll = d(:, 8);
+    pitch = d(:, 9);
+    yaw = d(:, 10);
 
     fprintf("=== Position Errors ===\n");
     fprintf("  dLat_mean = %0.10f deg, dLon_mean = %0.10f deg, dH_mean = %0.10f m\n", ...
@@ -44,86 +43,134 @@ function DiffFig(data, mode)
     fprintf("  dRoll_RMSE = %0.10f deg, dPitch_RMSE = %0.10f deg, dYaw_RMSE = %0.10f deg\n\n", ...
         calculate_rmse(roll), calculate_rmse(pitch), calculate_rmse(yaw));
 
-    % Plot Errors: Velocity (Row 1), Position (Row 2), Attitude (Row 3)
-    figure('Name', 'Estimation Error (Differences)', 'NumberTitle', 'off');
+    if ~exist('Figures', 'dir')
+        mkdir('Figures');
+    end
 
-    % Velocity Errors
-    subplot(3,3,1);    
-    plot(second, Vn, 'r-', 'LineWidth', 1.5, 'DisplayName', 'dVn');
-    ylabel('dVn (m/s)');
-    title('North Velocity Error');
-    legend('show', 'Location', 'best');
-    xlim([min(second), max(second)]);
-    grid on;
+    % ------------------------------------------------------------
+    % Figure 1: Velocity Errors
+    % ------------------------------------------------------------
+    h_vel = figure('Name', 'Velocity Errors', 'NumberTitle', 'off');
+    set(h_vel, 'Color', 'w');
 
-    subplot(3,3,2);
-    plot(second, Ve, 'r-', 'LineWidth', 1.5, 'DisplayName', 'dVe');
-    ylabel('dVe (m/s)');
-    title('East Velocity Error');
-    legend('show', 'Location', 'best');    
-    xlim([min(second), max(second)]);
-    grid on;
+    subplot(3, 1, 1);
+    plot(second, Vn, 'k-', 'LineWidth', 1.5);
+    grid on; box on; ylabel('dVn (m/s)', 'FontSize', 11);
+    title('North Velocity Error', 'FontSize', 11, 'FontWeight', 'bold');
+    xlim([min(second), max(second)]); set(gca, 'FontSize', 10);
 
-    subplot(3,3,3);
-    plot(second, Vd, 'r-', 'LineWidth', 1.5, 'DisplayName', 'dVd');
-    ylabel('dVd (m/s)');
-    title('Down Velocity Error');
-    legend('show', 'Location', 'best');
-    xlim([min(second), max(second)]);
-    grid on;
+    subplot(3, 1, 2);
+    plot(second, Ve, 'k-', 'LineWidth', 1.5);
+    grid on; box on; ylabel('dVe (m/s)', 'FontSize', 11);
+    title('East Velocity Error', 'FontSize', 11, 'FontWeight', 'bold');
+    xlim([min(second), max(second)]); set(gca, 'FontSize', 10);
 
-    % Position Errors
-    subplot(3,3,4);
-    plot(second, B, 'g-', 'LineWidth', 1.5, 'DisplayName', 'dLat');
-    ylabel('dLat (deg)');
-    title('Latitude Error');
-    legend('show', 'Location', 'best');
-    xlim([min(second), max(second)]);
-    grid on;
+    subplot(3, 1, 3);
+    plot(second, Vd, 'k-', 'LineWidth', 1.5);
+    grid on; box on; xlabel('Time (s)', 'FontSize', 11); ylabel('dVd (m/s)', 'FontSize', 11);
+    title('Down Velocity Error', 'FontSize', 11, 'FontWeight', 'bold');
+    xlim([min(second), max(second)]); set(gca, 'FontSize', 10);
+    text(0.98, 0.02, 'Mohammed Hsiny - FST Mohammedia - 2026', ...
+         'Units', 'normalized', ...
+         'HorizontalAlignment', 'right', ...
+         'FontSize', 9, ...
+         'Color', [0.4 0.4 0.4]);
+    print(h_vel, '-dpng', '-r300', 'Figures/velocity_errors.png');
 
-    subplot(3,3,5);
-    plot(second, L, 'g-', 'LineWidth', 1.5, 'DisplayName', 'dLon');
-    ylabel('dLon (deg)');
-    title('Longitude Error');
-    legend('show', 'Location', 'best');
-    xlim([min(second), max(second)]);
-    grid on;
+    % ------------------------------------------------------------
+    % Figure 2: Position Errors (Latitude, Longitude, Height)
+    % ------------------------------------------------------------
+    h_pos = figure('Name', 'Position Errors', 'NumberTitle', 'off');
+    set(h_pos, 'Color', 'w');
 
-    subplot(3,3,6);
-    plot(second, H, 'g-', 'LineWidth', 1.5, 'DisplayName', 'dH');
-    ylabel('dH (m)');
-    title('Height Error');
-    legend('show', 'Location', 'best');
-    xlim([min(second), max(second)]);
-    grid on;
+    subplot(3, 1, 1);
+    plot(second, B, 'k-', 'LineWidth', 1.5);
+    grid on; box on; ylabel('dLat (deg)', 'FontSize', 11);
+    title('Latitude Error', 'FontSize', 11, 'FontWeight', 'bold');
+    xlim([min(second), max(second)]); set(gca, 'FontSize', 10);
 
-    % Attitude Errors
-    subplot(3,3,7);
-    plot(second, roll, 'b-', 'LineWidth', 1.5, 'DisplayName', 'dRoll');
-    xlabel('Time (s)');
-    ylabel('dRoll (deg)');
-    title('Roll Error');
-    legend('show', 'Location', 'best');
-    xlim([min(second), max(second)]);
-    grid on;
+    subplot(3, 1, 2);
+    plot(second, L, 'k-', 'LineWidth', 1.5);
+    grid on; box on; ylabel('dLon (deg)', 'FontSize', 11);
+    title('Longitude Error', 'FontSize', 11, 'FontWeight', 'bold');
+    xlim([min(second), max(second)]); set(gca, 'FontSize', 10);
 
-    subplot(3,3,8);
-    plot(second, pitch, 'b-', 'LineWidth', 1.5, 'DisplayName', 'dPitch');
-    xlabel('Time (s)');
-    ylabel('dPitch (deg)');
-    title('Pitch Error');
-    legend('show', 'Location', 'best');
-    xlim([min(second), max(second)]);
-    grid on;
+    subplot(3, 1, 3);
+    plot(second, H, 'k-', 'LineWidth', 1.5);
+    grid on; box on; xlabel('Time (s)', 'FontSize', 11); ylabel('dH (m)', 'FontSize', 11);
+    title('Height Error', 'FontSize', 11, 'FontWeight', 'bold');
+    xlim([min(second), max(second)]); set(gca, 'FontSize', 10);
+    text(0.98, 0.02, 'Mohammed Hsiny - FST Mohammedia - 2026', ...
+         'Units', 'normalized', ...
+         'HorizontalAlignment', 'right', ...
+         'FontSize', 9, ...
+         'Color', [0.4 0.4 0.4]);
+    print(h_pos, '-dpng', '-r300', 'Figures/position_errors.png');
 
-    subplot(3,3,9);
-    plot(second, yaw, 'b-', 'LineWidth', 1.5, 'DisplayName', 'dYaw');
-    xlabel('Time (s)');
-    ylabel('dYaw (deg)');
-    title('Yaw Error');
-    legend('show', 'Location', 'best');
-    xlim([min(second), max(second)]);
-    grid on;
+    % ------------------------------------------------------------
+    % Figure 3: Full 9-Subplot Estimation Errors
+    % ------------------------------------------------------------
+    h_all = figure('Name', 'Position, Velocity, and Attitude Errors', 'NumberTitle', 'off');
+    set(h_all, 'Color', 'w');
+
+    subplot(3, 3, 1);
+    plot(second, Vn, 'k-', 'LineWidth', 1.5);
+    grid on; box on; ylabel('dVn (m/s)', 'FontSize', 10);
+    title('North Velocity Error', 'FontSize', 11, 'FontWeight', 'bold');
+    xlim([min(second), max(second)]); set(gca, 'FontSize', 9);
+
+    subplot(3, 3, 2);
+    plot(second, Ve, 'k-', 'LineWidth', 1.5);
+    grid on; box on; ylabel('dVe (m/s)', 'FontSize', 10);
+    title('East Velocity Error', 'FontSize', 11, 'FontWeight', 'bold');
+    xlim([min(second), max(second)]); set(gca, 'FontSize', 9);
+
+    subplot(3, 3, 3);
+    plot(second, Vd, 'k-', 'LineWidth', 1.5);
+    grid on; box on; ylabel('dVd (m/s)', 'FontSize', 10);
+    title('Down Velocity Error', 'FontSize', 11, 'FontWeight', 'bold');
+    xlim([min(second), max(second)]); set(gca, 'FontSize', 9);
+
+    subplot(3, 3, 4);
+    plot(second, B, 'k-', 'LineWidth', 1.5);
+    grid on; box on; ylabel('dLat (deg)', 'FontSize', 10);
+    title('Latitude Error', 'FontSize', 11, 'FontWeight', 'bold');
+    xlim([min(second), max(second)]); set(gca, 'FontSize', 9);
+
+    subplot(3, 3, 5);
+    plot(second, L, 'k-', 'LineWidth', 1.5);
+    grid on; box on; ylabel('dLon (deg)', 'FontSize', 10);
+    title('Longitude Error', 'FontSize', 11, 'FontWeight', 'bold');
+    xlim([min(second), max(second)]); set(gca, 'FontSize', 9);
+
+    subplot(3, 3, 6);
+    plot(second, H, 'k-', 'LineWidth', 1.5);
+    grid on; box on; ylabel('dH (m)', 'FontSize', 10);
+    title('Height Error', 'FontSize', 11, 'FontWeight', 'bold');
+    xlim([min(second), max(second)]); set(gca, 'FontSize', 9);
+
+    subplot(3, 3, 7);
+    plot(second, roll, 'k-', 'LineWidth', 1.5);
+    grid on; box on; xlabel('Time (s)', 'FontSize', 10); ylabel('dRoll (deg)', 'FontSize', 10);
+    title('Roll Error', 'FontSize', 11, 'FontWeight', 'bold');
+    xlim([min(second), max(second)]); set(gca, 'FontSize', 9);
+
+    subplot(3, 3, 8);
+    plot(second, pitch, 'k-', 'LineWidth', 1.5);
+    grid on; box on; xlabel('Time (s)', 'FontSize', 10); ylabel('dPitch (deg)', 'FontSize', 10);
+    title('Pitch Error', 'FontSize', 11, 'FontWeight', 'bold');
+    xlim([min(second), max(second)]); set(gca, 'FontSize', 9);
+
+    subplot(3, 3, 9);
+    plot(second, yaw, 'k-', 'LineWidth', 1.5);
+    grid on; box on; xlabel('Time (s)', 'FontSize', 10); ylabel('dYaw (deg)', 'FontSize', 10);
+    title('Yaw Error', 'FontSize', 11, 'FontWeight', 'bold');
+    xlim([min(second), max(second)]); set(gca, 'FontSize', 9);
+    text(0.98, 0.02, 'Mohammed Hsiny - FST Mohammedia - 2026', ...
+         'Units', 'normalized', ...
+         'HorizontalAlignment', 'right', ...
+         'FontSize', 8, ...
+         'Color', [0.4 0.4 0.4]);
 end
 
 function rmse_value = calculate_rmse(errors)
